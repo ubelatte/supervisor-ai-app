@@ -4,4 +4,5 @@ oauth2client
 transformers
 torch
 gunicorn
+python-docx
 
