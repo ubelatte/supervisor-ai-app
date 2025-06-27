@@ -21,8 +21,9 @@ LOCAL_SERVICE_ACCOUNT_FILE = r"C:\Users\wfhq_lpham\Downloads\comment-analyzer-46
 SHEET_NAME = "Automated Supervisor Report"
 MODEL_PATH = r"C:\Users\wfhq_lpham\OneDrive - Mestek, Inc\jsonfiles"
 
-SENDER_EMAIL = "lunachpham@gmail.com"
-SENDER_APP_PASSWORD = "dcrnytbtcvjzntju"
+# Get email and password from env vars or fallback to your local hardcoded (only local dev)
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "lunachpham@gmail.com")
+SENDER_APP_PASSWORD = os.environ.get("SENDER_APP_PASSWORD", "dcrnytbtcvjzntju")
 
 app = Flask(__name__)
 
@@ -64,4 +65,5 @@ def run_script():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
