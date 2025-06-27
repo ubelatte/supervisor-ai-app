@@ -1,5 +1,10 @@
 from flask import Flask, request, jsonify
+
 app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return '✅ Supervisor AI Webhook is live!'
 
 @app.route('/run-script', methods=['POST'])
 def run_script():
