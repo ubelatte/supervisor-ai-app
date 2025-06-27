@@ -1,7 +1,6 @@
-@app.route('/')
+@app.route('/', methods=['GET'])
 def home():
     return '✅ Supervisor AI Webhook is live!'
-
 @app.route('/run-script', methods=['POST'])
 def run_script():
     data = request.json
