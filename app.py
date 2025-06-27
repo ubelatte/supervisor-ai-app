@@ -1,4 +1,5 @@
 import os
+import json
 import certifi
 os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
 
@@ -15,7 +16,8 @@ from email.message import EmailMessage
 from flask import Flask, request, jsonify
 
 # --- Setup constants ---
-SERVICE_ACCOUNT_FILE = r"C:\Users\wfhq_lpham\Downloads\comment-analyzer-463511-51737bb4e537.json"
+# Local fallback path for your JSON (only for local dev)
+LOCAL_SERVICE_ACCOUNT_FILE = r"C:\Users\wfhq_lpham\Downloads\comment-analyzer-463511-51737bb4e537.json"
 SHEET_NAME = "Automated Supervisor Report"
 MODEL_PATH = r"C:\Users\wfhq_lpham\OneDrive - Mestek, Inc\jsonfiles"
 
@@ -24,10 +26,24 @@ SENDER_APP_PASSWORD = "dcrnytbtcvjzntju"
 
 app = Flask(__name__)
 
+def get_gspread_creds():
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds_json_str = os.environ.get("GOOGLE_CREDS_JSON")
+    if creds_json_str:
+        creds_dict = json.loads(creds_json_str)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    else:
+        creds = ServiceAccountCredentials.from_json_keyfile_name(LOCAL_SERVICE_ACCOUNT_FILE, scope)
+    return creds
+
 def run_pipeline():
+    creds = get_gspread_creds()
+    gc = gspread.authorize(creds)
+    sheet = gc.open(SHEET_NAME).sheet1
+
     # Your full run_pipeline function code here...
     # (keep everything exactly as you wrote it)
-    pass  # Replace pass with your full function body
+    pass  # Replace this pass with your full run_pipeline body
 
 @app.route('/', methods=['GET'])
 def home():
