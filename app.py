@@ -1,3 +1,24 @@
+@app.route('/')
+def home():
+    return '✅ Supervisor AI Webhook is live!'
+
+@app.route('/run-script', methods=['POST'])
+def run_script():
+    data = request.json
+    print("Received data:", data)
+    try:
+        success = run_pipeline()
+        if success:
+            return jsonify({"status": "success", "message": "Webhook triggered and script executed!"})
+        else:
+            return jsonify({"status": "error", "message": "Failed to process the latest data."}), 500
+    except Exception as e:
+        print(f"Error during pipeline execution: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
+
 import os
 import certifi
 os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
@@ -262,23 +283,3 @@ def run_pipeline():
 
     return True
 
-@app.route('/')
-def home():
-    return '✅ Supervisor AI Webhook is live!'
-
-@app.route('/run-script', methods=['POST'])
-def run_script():
-    data = request.json
-    print("Received data:", data)
-    try:
-        success = run_pipeline()
-        if success:
-            return jsonify({"status": "success", "message": "Webhook triggered and script executed!"})
-        else:
-            return jsonify({"status": "error", "message": "Failed to process the latest data."}), 500
-    except Exception as e:
-        print(f"Error during pipeline execution: {e}")
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
