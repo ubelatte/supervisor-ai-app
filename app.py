@@ -2,7 +2,6 @@ import os
 import json
 import certifi
 os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
-
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from transformers import pipeline
