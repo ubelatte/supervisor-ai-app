@@ -96,3 +96,18 @@ def submit():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
+
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    data = request.get_json()
+    print("📥 Received submission:", json.dumps(data, indent=2))
+
+    try:
+        # Process your data here or trigger your pipeline
+        run_pipeline()  # Optionally, pass data to this function if needed
+        return jsonify({"status": "success", "message": "Data received and processed!"}), 200
+    except Exception as e:
+        print("❌ Error processing submission:", str(e))
+        return jsonify({"status": "error", "message": str(e)}), 500
+
