@@ -16,12 +16,10 @@ from email.message import EmailMessage
 from flask import Flask, request, jsonify
 
 # --- Setup constants ---
-# Local fallback path for your JSON (only for local dev)
 LOCAL_SERVICE_ACCOUNT_FILE = r"C:\Users\wfhq_lpham\Downloads\comment-analyzer-463511-51737bb4e537.json"
 SHEET_NAME = "Automated Supervisor Report"
 MODEL_PATH = r"C:\Users\wfhq_lpham\OneDrive - Mestek, Inc\jsonfiles"
 
-# Get email and password from env vars or fallback to your local hardcoded (only local dev)
 SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "lunachpham@gmail.com")
 SENDER_APP_PASSWORD = os.environ.get("SENDER_APP_PASSWORD", "dcrnytbtcvjzntju")
 
@@ -37,31 +35,63 @@ def get_gspread_creds():
         creds = ServiceAccountCredentials.from_json_keyfile_name(LOCAL_SERVICE_ACCOUNT_FILE, scope)
     return creds
 
-def run_pipeline():
-    creds = get_gspread_creds()
-    gc = gspread.authorize(creds)
-    sheet = gc.open(SHEET_NAME).sheet1
+def run_pipeline(payload):
+    try:
+        creds = get_gspread_creds()
+        gc = gspread.authorize(creds)
+        sheet = gc.open(SHEET_NAME).sheet1
 
-    # Your full run_pipeline function code here...
-    # (keep everything exactly as you wrote it)
-    pass  # Replace this pass with your full run_pipeline body
+        headers = [h.strip().replace('\n', ' ') for h in sheet.row_values(1)]
+
+        comment_keywords = [
+            "How does this employee typically respond to feedback",
+            "How effectively does this employee communicate with others",
+            "How reliable is this employee in terms of attendance and use of time",
+            "When your team encounters workflow disruptions",
+            "In what ways does this employee demonstrate commitment to safety",
+            "How effectively does this employee use technical documentation"
+        ]
+
+        score_headers = [
+            "Score - Feedback & Conflict Resolution",
+            "Score - Communication & Team Support",
+            "Score - Reliability & Productivity",
+            "Score - Adaptability & Quality Focus",
+            "Score - Safety Commitment",
+            "Score - Documentation & Procedures"
+        ]
+
+        row = [
+            payload.get("timestamp", ""),
+            payload.get("email", ""),
+            payload.get("employeeName", ""),
+            payload.get("department", ""),
+            payload.get("supervisorName", "")
+        ] + payload.get("comments", [])
+
+        sheet.append_row(row)
+
+        return True
+    except Exception as e:
+        print("❌ Error in run_pipeline:", e)
+        return False
 
 @app.route('/', methods=['GET'])
 def home():
     return '✅ Supervisor AI Webhook is live!'
 
-@app.route('/run-script', methods=['POST'])
-def run_script():
+@app.route('/submit', methods=['POST'])
+def submit():
     data = request.json
-    print("Received data:", data)
+    print("📨 Received POST /submit with payload:", json.dumps(data, indent=2))
     try:
-        success = run_pipeline()
+        success = run_pipeline(data)
         if success:
-            return jsonify({"status": "success", "message": "Webhook triggered and script executed!"})
+            return jsonify({"status": "success", "message": "Processed successfully"})
         else:
-            return jsonify({"status": "error", "message": "Failed to process the latest data."}), 500
+            return jsonify({"status": "error", "message": "Processing failed"}), 500
     except Exception as e:
-        print(f"Error during pipeline execution: {e}")
+        print("❌ Exception during /submit:", e)
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
